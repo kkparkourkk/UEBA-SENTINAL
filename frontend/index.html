@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UEBA Sentinel — Next-Gen Behavioral Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              900: '#7c2d12',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0b0c0e] text-neutral-200 font-sans antialiased min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+
+  <!-- Header & Navigation -->
+  <header class="border-b border-neutral-800 bg-[#0e1013]/90 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-orange-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-orange-600/30">
+          <i class="fa-solid fa-shield-halved text-base"></i>
+        </div>
+        <div>
+          <span class="text-base font-bold text-white tracking-tight">UEBA Sentinel</span>
+          <span class="text-xs text-orange-400 font-mono ml-2 px-2 py-0.5 rounded-full bg-orange-950/70 border border-orange-800/50">FastAPI &bull; WebSocket Live</span>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-3">
+        <a href="index.html" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-neutral-800 text-white border border-neutral-700">Overview</a>
+        <a href="dashboard.html" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-gauge-high text-orange-400"></i>
+          SOC Dashboard
+        </a>
+        <a href="hmw.html" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-purple-400"></i>
+          HMW Strategy Tool
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-1 max-w-7xl mx-auto px-6 py-12 space-y-16">
+    <section class="relative rounded-3xl border border-neutral-800/90 bg-gradient-to-b from-neutral-900/90 via-[#0e1014] to-[#0b0c0e] p-10 md:p-16 overflow-hidden shadow-2xl">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="max-w-3xl space-y-6 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800/80 border border-neutral-700 text-xs font-mono text-neutral-300">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Shift from Reactive Firefighting to Proactive Posture</span>
+        </div>
+
+        <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
+          Detect Insider Deviations <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-rose-500">
+            Before They Become Incidents
+          </span>
+        </h1>
+
+        <p class="text-base md:text-lg text-neutral-300 leading-relaxed">
+          UEBA Sentinel unifies 30-day circadian behavioral baselines, sub-second WebSocket telemetry, and EWMA long-term drift detection into a transparent SOC workspace. Built around four core <strong>How Might We</strong> challenges.
+        </p>
+
+        <!-- Quick Access CTAs -->
+        <div class="flex flex-wrap items-center gap-4 pt-4">
+          <a href="dashboard.html" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-600 hover:to-rose-700 text-white font-bold text-sm flex items-center gap-2.5 shadow-xl shadow-orange-950/40 transition hover:scale-[1.02]">
+            <i class="fa-solid fa-desktop"></i>
+            Launch Real-Time SOC Dashboard
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </a>
+
+          <a href="hmw.html" class="px-5 py-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 font-semibold text-sm border border-neutral-700 flex items-center gap-2 transition hover:scale-[1.02]">
+            <i class="fa-solid fa-lightbulb text-purple-400"></i>
+            HMW Strategy & Ideation Board
+          </a>
+        </div>
+      </div>
+
+      <!-- Live Telemetry KPI Strip -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 pt-8 border-t border-neutral-800/80">
+        <div class="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Proactive Interceptions</div>
+          <div class="text-2xl font-bold text-emerald-400 mt-1">78% Ratio</div>
+          <div class="text-xs text-neutral-500 mt-0.5">Early warnings vs reactive breaches</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Pre-Incident Lead Time</div>
+          <div class="text-2xl font-bold text-amber-400 mt-1">4.2 Hours</div>
+          <div class="text-xs text-neutral-500 mt-0.5">Average detection head-start</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Drift Tracking</div>
+          <div class="text-2xl font-bold text-orange-400 mt-1">EWMA Velocity</div>
+          <div class="text-xs text-neutral-500 mt-0.5">>15% weekly drift flagged</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+          <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Universal Ingestion</div>
+          <div class="text-2xl font-bold text-cyan-400 mt-1">CEF / Syslog / JSON</div>
+          <div class="text-xs text-neutral-500 mt-0.5">Auto-normalizing log forwarders</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Specific HMW Problem Statements & Feature Mapping Grid -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-mono uppercase text-orange-400 font-bold tracking-wider">HMW Problem Statement Mapping</span>
+          <h2 class="text-2xl font-extrabold text-white mt-1">Four Core Design Challenges Solved</h2>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full bg-neutral-800 border border-neutral-700 text-neutral-400">Team Solutions Matrix</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- HMW 1 -->
+        <div class="p-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-4 hover:border-orange-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-orange-950/60 text-orange-400 border border-orange-800/40">HMW 1</span>
+            <span class="text-xs text-neutral-400 font-mono">Contributor: Shriram</span>
+          </div>
+          <h3 class="text-base font-bold text-white">"How might we detect slow, gradual changes in behavior before they become serious?"</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            <strong>Feature: Long-Term Baseline Drift & Cumulative Velocity Tracker</strong><br>
+            Exponentially Weighted Moving Average (EWMA) tracks rolling multi-day volume shifts. Captures low-and-slow data exfiltration that stays beneath per-event thresholds but exhibits continuous deviation (>15% weekly drift).
+          </p>
+          <div class="pt-2 flex items-center justify-between text-xs text-orange-400 font-semibold">
+            <span>Implemented in Unified Entity Dossier</span>
+            <a href="dashboard.html" class="hover:underline">Inspect Live &rarr;</a>
+          </div>
+        </div>
+
+        <!-- HMW 2 -->
+        <div class="p-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-4 hover:border-blue-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-950/60 text-blue-400 border border-blue-800/40">HMW 2</span>
+            <span class="text-xs text-neutral-400 font-mono">Contributor: Keshav</span>
+          </div>
+          <h3 class="text-base font-bold text-white">"How might we make security dashboards easier to understand at a glance?"</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            <strong>Feature: Plain-English Anomaly Narrative & 3-Second Visual Chips</strong><br>
+            Replaces cryptic JSON payloads with natural sentences (e.g., <em>"Sophia Chen executed Cloud Bulk Sync from atypical IP (Munich) during non-business hours downloading 4.5x daily volume."</em>) paired with instant color chips.
+          </p>
+          <div class="pt-2 flex items-center justify-between text-xs text-blue-400 font-semibold">
+            <span>Implemented in Incident Cards</span>
+            <a href="dashboard.html" class="hover:underline">Inspect Live &rarr;</a>
+          </div>
+        </div>
+
+        <!-- HMW 3 -->
+        <div class="p-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-4 hover:border-emerald-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">HMW 3</span>
+            <span class="text-xs text-neutral-400 font-mono">Contributor: Alfred</span>
+          </div>
+          <h3 class="text-base font-bold text-white">"How might we integrate AI-driven detection without losing human oversight?"</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            <strong>Feature: "Explain Why" Breakdown & Dynamic Feedback Loop</strong><br>
+            Every alert reveals exact factor contributions (Peer Deviation 40%, Off-Hours 35%, EWMA Drift 25%). Analysts take 1-click containment (Verify Threat / Step-Up MFA) or flag false positives, which automatically down-weights the signal in memory.
+          </p>
+          <div class="pt-2 flex items-center justify-between text-xs text-emerald-400 font-semibold">
+            <span>Implemented in Incident Prioritization Queue</span>
+            <a href="dashboard.html" class="hover:underline">Inspect Live &rarr;</a>
+          </div>
+        </div>
+
+        <!-- HMW 4 -->
+        <div class="p-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 space-y-4 hover:border-purple-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-purple-950/60 text-purple-400 border border-purple-800/40">HMW 4</span>
+            <span class="text-xs text-neutral-400 font-mono">Contributor: Arshinth</span>
+          </div>
+          <h3 class="text-base font-bold text-white">"How might we make new security tools easier to onboard into an existing stack?"</h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            <strong>Feature: Universal Telemetry Ingestion Adapter (/api/v1/telemetry/universal)</strong><br>
+            Schema-flexible ingestion route accepting CEF, Syslog, or arbitrary JSON keys. Maps forwarder aliases (`client_ip`, `src_ip`, `suser`) into normalized models in sub-second pipelines.
+          </p>
+          <div class="pt-2 flex items-center justify-between text-xs text-purple-400 font-semibold">
+            <span>Interactive Adapter Modal Available</span>
+            <a href="dashboard.html" class="hover:underline">Test Ingestion &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture & Design Goals Summary -->
+    <section class="p-8 rounded-3xl border border-neutral-800 bg-neutral-950/80 space-y-6">
+      <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-layer-group text-orange-400"></i>
+        System Architecture Highlights
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-neutral-400">
+        <div class="space-y-2">
+          <div class="font-bold text-neutral-200">1. Streaming Pipeline</div>
+          <p>Native FastAPI WebSockets (<code class="text-orange-300">/ws/telemetry</code>) push sub-second events, score changes, and posture statistics to connected dashboards without HTTP polling.</p>
+        </div>
+        <div class="space-y-2">
+          <div class="font-bold text-neutral-200">2. EWMA & Closed-Loop ML</div>
+          <p>Exponentially Weighted Moving Average baseline drift detection combined with feedback-driven signal down-weighting (<code class="text-orange-300">RULE_ODD_HOURS: 0.65x</code>) to eliminate alert fatigue.</p>
+        </div>
+        <div class="space-y-2">
+          <div class="font-bold text-neutral-200">3. Human-in-the-Loop</div>
+          <p>No autonomous destructive lockout. Analysts inspect model contribution weights and authorize Step-Up MFA or containment actions with 1 click.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-neutral-800 py-6 px-6 text-center text-xs text-neutral-500">
+    <p>UEBA Sentinel &bull; Academic & Enterprise Cybersecurity Innovation Prototype &bull; Shriram, Arshinth, Keshav, and Alfred</p>
+  </footer>
+
+</body>
+</html>

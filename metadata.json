@@ -1,0 +1,6 @@
+{
+  "name": "UEBA Analytics Prototype",
+  "description": "User and Entity Behavior Analytics prototype featuring unified risk scores, Isolation Forest anomaly detection, human analyst threat corroboration, and dynamic role-based baseline prioritization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

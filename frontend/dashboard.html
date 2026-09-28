@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UEBA Sentinel — Real-Time SOC Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0b0c0e] text-neutral-200 font-sans antialiased min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+
+  <!-- Top Navigation -->
+  <header class="border-b border-neutral-800 bg-[#0e1013]/95 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-6 py-2.5">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="h-8 w-8 rounded-xl bg-gradient-to-tr from-orange-600 to-rose-600 flex items-center justify-center text-white shadow-md shadow-orange-600/30 group-hover:scale-105 transition">
+            <i class="fa-solid fa-shield-halved text-sm"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white tracking-tight">UEBA Sentinel</span>
+              <span id="ws-status-badge" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 text-[10px] font-mono">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>WS LIVE</span>
+              </span>
+            </div>
+            <p class="text-[10px] text-neutral-400 hidden sm:block">Sub-Second Scoring &bull; EWMA Drift &bull; Explain-Why Breakdown</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Action & View Controls -->
+      <div class="flex items-center gap-2.5">
+        <!-- Universal Ingestion Button (HMW 4) -->
+        <button id="btn-open-ingestion" class="px-3 py-1.5 rounded-lg bg-purple-950/70 border border-purple-700/60 text-purple-300 hover:text-white hover:bg-purple-900 transition text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-cloud-arrow-up text-purple-400"></i>
+          <span>Universal Ingestion Adapter</span>
+          <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-800 text-purple-200">HMW 4</span>
+        </button>
+
+        <a href="hmw.html" class="px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-800 transition text-xs font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-purple-400"></i>
+          <span class="hidden sm:inline">HMW Strategy</span>
+        </a>
+
+        <a href="index.html" class="px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-800 transition text-xs font-medium">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 space-y-4">
+
+    <!-- 1. POSTURE PANEL (TOP) -->
+    <section class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4 shadow-xl backdrop-blur-sm">
+      <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+        
+        <!-- Proactive Ratio Meter -->
+        <div class="flex items-center gap-4 border-b xl:border-b-0 xl:border-r border-neutral-800 pb-3 xl:pb-0 xl:pr-6">
+          <div class="relative w-16 h-16 flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-neutral-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path id="posture-circle-bar" class="text-emerald-500 transition-all duration-700" stroke-dasharray="78, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span id="posture-ratio-val" class="absolute text-sm font-bold text-white font-mono">78%</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-compass"></i>
+              Security Posture Ratio
+            </div>
+            <div class="text-xs text-neutral-300 font-medium mt-0.5">
+              <span id="early-warnings-stat" class="text-emerald-400 font-bold">14</span> Proactive Warnings vs <span id="reactive-stat" class="text-rose-400 font-bold">4</span> Reactive Breaches
+            </div>
+            <div class="text-[10px] text-neutral-500">Lead time advantage: <span id="lead-time-stat" class="text-amber-400 font-mono font-bold">4.2 hrs</span> pre-incident</div>
+          </div>
+        </div>
+
+        <!-- False-Positive Down-weighting Metric Strip (HMW 3 & Goal 5) -->
+        <div class="flex-1 overflow-x-auto custom-scrollbar flex items-center gap-3 py-1">
+          <div class="text-xs text-neutral-400 font-mono uppercase text-nowrap pr-2">
+            FP Down-Weights:
+          </div>
+
+          <div class="px-2.5 py-1.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-xs flex items-center gap-2">
+            <span class="text-neutral-400">Odd Hours:</span>
+            <span id="mult-odd-hours" class="text-orange-400 font-mono font-bold">0.65x</span>
+            <span class="text-[10px] text-emerald-400">(-35%)</span>
+          </div>
+
+          <div class="px-2.5 py-1.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-xs flex items-center gap-2">
+            <span class="text-neutral-400">Travel Velocity:</span>
+            <span id="mult-travel" class="text-cyan-400 font-mono font-bold">0.85x</span>
+            <span class="text-[10px] text-emerald-400">(-15%)</span>
+          </div>
+
+          <div class="px-2.5 py-1.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-xs flex items-center gap-2">
+            <span class="text-neutral-400">Volume Spike:</span>
+            <span id="mult-volume" class="text-neutral-200 font-mono font-bold">1.00x</span>
+            <span class="text-[10px] text-neutral-500">(Normal)</span>
+          </div>
+
+          <div class="px-2.5 py-1.5 rounded-lg bg-neutral-950/70 border border-neutral-800 text-xs flex items-center gap-2">
+            <span class="text-neutral-400">EWMA Drift:</span>
+            <span id="mult-drift" class="text-rose-400 font-mono font-bold">1.20x</span>
+            <span class="text-[10px] text-rose-400">(Boosted)</span>
+          </div>
+        </div>
+
+        <!-- Threat Simulation Quick Triggers -->
+        <div class="flex items-center gap-2 flex-shrink-0 pt-2 xl:pt-0">
+          <span class="text-[11px] text-neutral-400 font-mono hidden md:inline">Simulate:</span>
+          <button onclick="triggerScenario('LOW_AND_SLOW_EXFIL')" class="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-[11px] font-semibold text-orange-300 border border-neutral-700 transition" title="HMW 1: Slow gradual exfiltration">
+            Low & Slow
+          </button>
+          <button onclick="triggerScenario('ATYPICAL_OFF_HOURS_ACCESS')" class="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-[11px] font-semibold text-amber-300 border border-neutral-700 transition" title="HMW 2: Off-hours atypical access">
+            Off-Hours
+          </button>
+          <button onclick="triggerScenario('IMPOSSIBLE_TRAVEL_VELOCITY')" class="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-[11px] font-semibold text-cyan-300 border border-neutral-700 transition" title="Impossible travel">
+            Travel
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3-COLUMN WORKSPACE GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+      <!-- LEFT PANEL: Real-Time Event Stream (3 Cols) -->
+      <section class="lg:col-span-3 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 flex flex-col h-[750px] shadow-lg">
+        <div class="flex items-center justify-between pb-3 border-b border-neutral-800">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Live Telemetry Stream</h2>
+          </div>
+          <button id="btn-toggle-stream" class="text-[11px] px-2 py-0.5 rounded bg-neutral-800 text-neutral-400 hover:text-white border border-neutral-700">
+            Pause
+          </button>
+        </div>
+
+        <div class="text-[11px] text-neutral-500 py-1.5 flex items-center justify-between font-mono border-b border-neutral-800/60">
+          <span>EVENT &bull; ENTITY</span>
+          <span>SCORE</span>
+        </div>
+
+        <!-- Event Ticker List -->
+        <div id="events-stream-container" class="flex-1 overflow-y-auto space-y-2 py-2 pr-1 custom-scrollbar">
+          <!-- Populated by JavaScript WebSocket client -->
+          <div class="text-xs text-neutral-500 text-center py-8">Connecting to /ws/telemetry...</div>
+        </div>
+      </section>
+
+      <!-- CENTER PANEL: Unified Entity View & Circadian Baseline (5 Cols) -->
+      <section class="lg:col-span-5 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 flex flex-col h-[750px] shadow-lg space-y-4 overflow-y-auto custom-scrollbar">
+        
+        <!-- Entity Selector Header -->
+        <div class="flex items-center justify-between pb-2 border-b border-neutral-800">
+          <div>
+            <span class="text-[10px] font-mono uppercase text-orange-400 font-bold">Goal 1 & HMW 1 Dossier</span>
+            <h2 class="text-sm font-bold text-white">Unified Behavioral Profile</h2>
+          </div>
+
+          <select id="entity-selector" onchange="onEntitySelect(this.value)" class="bg-neutral-950 border border-neutral-700 rounded-lg px-2.5 py-1 text-xs text-neutral-200 font-medium focus:outline-none focus:border-orange-500">
+            <option value="sophia.chen">Sophia Chen (Engineering - Risk 88)</option>
+            <option value="marcus.vance">Marcus Vance (Finance - Risk 79)</option>
+            <option value="elena.rostova">Elena Rostova (DevOps - Risk 64)</option>
+            <option value="david.kim">David Kim (Human Resources - Risk 42)</option>
+          </select>
+        </div>
+
+        <!-- User Profile Card -->
+        <div id="entity-profile-card" class="p-4 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-3">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-orange-500 to-amber-600 flex items-center justify-center font-bold text-white text-sm">
+                SC
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white">Sophia Chen</h3>
+                <p class="text-xs text-neutral-400">Senior Infrastructure Architect &bull; Engineering</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-mono text-neutral-400">Risk Score</div>
+              <div class="text-xl font-bold text-rose-400 font-mono">88 / 100</div>
+            </div>
+          </div>
+
+          <!-- HMW 1: Dedicated Long-Term Baseline Drift Velocity Indicator -->
+          <div class="p-3 rounded-lg bg-orange-950/40 border border-orange-800/60 flex items-center justify-between">
+            <div class="space-y-0.5">
+              <div class="text-[10px] font-mono uppercase font-bold text-orange-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line"></i>
+                HMW 1: Long-Term Baseline Drift Velocity Tracker
+              </div>
+              <p class="text-xs text-neutral-200">
+                EWMA Velocity: <span class="font-mono text-orange-300 font-bold">+28.4% Weekly Drift</span>
+              </p>
+            </div>
+            <span class="px-2 py-1 rounded bg-orange-900/60 border border-orange-700 text-[10px] font-bold text-orange-200 animate-pulse">
+              Low & Slow Exfil Warning
+            </span>
+          </div>
+        </div>
+
+        <!-- HMW 2: Plain-English Anomaly Narrative Card -->
+        <div class="p-4 rounded-xl bg-blue-950/30 border border-blue-800/50 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase font-bold text-blue-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-comment-dots"></i>
+              HMW 2: Plain-English Anomaly Narrative
+            </span>
+            <span class="text-[9px] px-2 py-0.5 rounded bg-blue-900/60 text-blue-300 font-mono">3-Second Scan</span>
+          </div>
+          <p id="narrative-sentence" class="text-xs text-neutral-200 leading-relaxed font-medium">
+            "Sophia Chen executed Cloud Storage Bulk Sync on s3://sentinel-customer-pii-vault/archive.tar.gz from atypical IP/origin (Munich, Germany) during non-business hours downloading 4.5x daily volume with +28.4% cumulative weekly drift."
+          </p>
+          <div id="narrative-chips" class="flex flex-wrap gap-1.5 pt-1">
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-800/60 text-rose-300 font-mono">ATYPICAL_LOCATION</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300 font-mono">OFF_HOURS</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-800/60 text-orange-300 font-mono">VOLUME_SPIKE</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-800/60 text-purple-300 font-mono">RAPID_DRIFT</span>
+          </div>
+        </div>
+
+        <!-- Circadian 24-Hour Curve (Baseline vs Observed) -->
+        <div class="p-4 rounded-xl bg-neutral-950/80 border border-neutral-800 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-white">24-Hour Circadian Volume Trend</span>
+            <span class="text-[10px] text-neutral-400 font-mono">Expected vs Observed (KB)</span>
+          </div>
+          <div class="h-44 w-full">
+            <canvas id="circadianChart"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT PANEL: Prioritized Incident Queue & Explain-Why Inspector (4 Cols) -->
+      <section class="lg:col-span-4 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4 flex flex-col h-[750px] shadow-lg space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-neutral-800">
+          <div>
+            <span class="text-[10px] font-mono uppercase text-orange-400 font-bold">Goal 3 & HMW 3 Queue</span>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Prioritized Incidents</h2>
+          </div>
+          <span id="incidents-count-badge" class="px-2 py-0.5 rounded-full bg-rose-950 border border-rose-800 text-rose-400 text-[10px] font-bold font-mono">
+            4 Active
+          </span>
+        </div>
+
+        <!-- Incidents List Container -->
+        <div id="incidents-container" class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+          <!-- Populated by JavaScript with Explain-Why factor breakdowns and 1-click triage buttons -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- UNIVERSAL TELEMETRY INGESTION MODAL (HMW 4) -->
+  <div id="ingestion-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#121418] border border-neutral-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-neutral-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 rounded-lg bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-400">
+            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Universal Telemetry Ingestion Adapter</h3>
+            <p class="text-[11px] text-neutral-400 font-mono">Endpoint: POST /api/v1/telemetry/universal</p>
+          </div>
+        </div>
+        <button id="btn-close-ingestion" class="text-neutral-400 hover:text-white text-base">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <label class="font-medium text-neutral-300">Format Type & Presets:</label>
+          <div class="flex items-center gap-2">
+            <button onclick="loadSamplePreset('cef')" class="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] border border-neutral-700">Sample CEF</button>
+            <button onclick="loadSamplePreset('syslog')" class="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] border border-neutral-700">Sample Syslog</button>
+            <button onclick="loadSamplePreset('json')" class="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] border border-neutral-700">Sample JSON</button>
+          </div>
+        </div>
+
+        <textarea id="raw-log-input" rows="5" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs font-mono text-neutral-200 focus:outline-none focus:border-purple-500 custom-scrollbar" placeholder="Paste CEF string, Syslog line, or raw JSON with arbitrary keys (e.g. client_ip, suser, etc.)..."></textarea>
+
+        <!-- Normalized Result Output Box -->
+        <div id="ingestion-result-box" class="p-3 rounded-xl bg-neutral-950/80 border border-neutral-800/80 text-xs font-mono hidden space-y-2">
+          <div class="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Normalized & Scored Successfully</span>
+          </div>
+          <pre id="ingestion-result-json" class="text-[10px] text-neutral-300 max-h-32 overflow-y-auto custom-scrollbar"></pre>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-neutral-800">
+        <button id="btn-cancel-ingestion" class="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-neutral-300">Close</button>
+        <button onclick="submitUniversalTelemetry()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-purple-950/40">
+          <i class="fa-solid fa-bolt"></i>
+          Normalize & Ingest Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
