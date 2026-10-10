@@ -714,6 +714,11 @@ export const UnifiedDashboardView: React.FC<UnifiedDashboardViewProps> = ({
                       ) : (
                         <span className="text-[#64748b] text-[9px]">NORMAL</span>
                       )}
+                      {evt.linked_alert_id && (
+                        <span className="ml-1 px-1 py-0.2 bg-amber-950 text-amber-300 border border-amber-800 text-[9px] font-bold">
+                          ALERT {evt.linked_alert_id}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -842,22 +847,34 @@ export const UnifiedDashboardView: React.FC<UnifiedDashboardViewProps> = ({
           {/* Analyst Sovereign Actions (Bottom) */}
           <div className="pt-2 border-t border-[#232b3b] space-y-1.5">
             <div className="text-[9px] text-[#64748b]">// SOVEREIGN ANALYST INTERVENTION</div>
+            {selectedEvent?.linked_alert_id ? (
+              <div className="text-[9px] text-emerald-400/90">
+                // ACTS ON ALERT {selectedEvent.linked_alert_id}
+              </div>
+            ) : (
+              <div className="text-[9px] text-amber-400/90">
+                // NO ALERT RAISED FOR THIS EVENT — pick a row marked ALERT, or use the ALERTS tab
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-1.5 text-[10px]">
               <button
                 onClick={() => handleTriageAction('VERIFY_THREAT')}
-                className="retro-btn text-rose-300 border-rose-800 hover:bg-rose-600 hover:text-white"
+                disabled={!selectedEvent?.linked_alert_id}
+                className="retro-btn text-rose-300 border-rose-800 hover:bg-rose-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 &gt; VERIFY THREAT
               </button>
               <button
                 onClick={() => handleTriageAction('STEP_UP_MFA')}
-                className="retro-btn text-amber-300 border-amber-800 hover:bg-amber-600 hover:text-black"
+                disabled={!selectedEvent?.linked_alert_id}
+                className="retro-btn text-amber-300 border-amber-800 hover:bg-amber-600 hover:text-black disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 &gt; STEP-UP MFA
               </button>
               <button
                 onClick={() => handleTriageAction('FLAG_FALSE_POSITIVE')}
-                className="retro-btn text-[#94a3b8]"
+                disabled={!selectedEvent?.linked_alert_id}
+                className="retro-btn text-[#94a3b8] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 &gt; FALSE POSITIVE
               </button>

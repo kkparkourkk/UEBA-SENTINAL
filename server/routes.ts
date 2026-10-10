@@ -152,7 +152,7 @@ apiRouter.get('/users/:userId/unified', (req: Request, res: Response) => {
         s.normalized_anomaly_score,
         s.is_ai_flagged,
         (SELECT a.id FROM alerts a, json_each(a.grouped_event_ids_json) j WHERE j.value = l.id LIMIT 1) as linked_alert_id,
-        (SELECT a.priority_score FROM alerts a WHERE a.grouped_event_ids_json LIKE '%' || l.id || '%' LIMIT 1) as linked_priority_score
+        (SELECT a.priority_score FROM alerts a, json_each(a.grouped_event_ids_json) j WHERE j.value = l.id LIMIT 1) as linked_priority_score
       FROM activity_logs l
       LEFT JOIN anomaly_scores s ON l.id = s.event_id
       WHERE l.user_id = ?
