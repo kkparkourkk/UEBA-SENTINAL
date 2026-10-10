@@ -253,7 +253,7 @@ export default function App() {
     alertId: string,
     decision: string,
     justification: string
-  ) => {
+  ): Promise<boolean> => {
     try {
       const res = await fetch(`/api/alerts/${alertId}/feedback`, {
         method: 'POST',
@@ -275,8 +275,10 @@ export default function App() {
       await fetchMetrics();
       setFeedbackNotice(`Action [${decision}] recorded on alert #${alertId}. Down-weight applied.`);
       setTimeout(() => setFeedbackNotice(null), 4000);
+      return true;
     } catch (err: any) {
       setErrorMessage(err.message || 'Feedback error');
+      return false;
     }
   };
 
@@ -380,6 +382,7 @@ export default function App() {
                   }}
                   currentUser={currentUser}
                   onOpenAddEntity={() => setIsAddEntityOpen(true)}
+                  onSubmitFeedback={handleSubmitFeedback}
                 />
               ) : (
                 <div className="p-12 text-center text-[#6b7280] font-mono text-xs">

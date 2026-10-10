@@ -5,7 +5,7 @@ import { AlertTriangle, ShieldAlert, KeyRound, Ban, Search, CheckCircle } from '
 interface AnomaliesViewProps {
   alerts: AlertIncident[];
   onNavigateToUser?: (userId: string) => void;
-  onSubmitFeedback?: (alertId: string, decision: string, justification: string) => void;
+  onSubmitFeedback?: (alertId: string, decision: string, justification: string) => Promise<boolean> | void;
 }
 
 export const AnomaliesView: React.FC<AnomaliesViewProps> = ({
@@ -20,12 +20,16 @@ export const AnomaliesView: React.FC<AnomaliesViewProps> = ({
 
   const selectedAlert = alerts.find((a) => a.id === selectedAlertId) || alerts[0];
 
-  const handleAction = (decision: string) => {
+  const handleAction = async (decision: string) => {
     if (!selectedAlert) return;
-    if (onSubmitFeedback) {
-      onSubmitFeedback(selectedAlert.id, decision, `Analyst action: ${decision}`);
-    }
-    setFeedbackSuccess(`Action recorded: ${decision} for alert ${selectedAlert.id}`);
+    const ok = onSubmitFeedback
+      ? await onSubmitFeedback(selectedAlert.id, decision, `Analyst action: ${decision}`)
+      : undefined;
+    setFeedbackSuccess(
+      ok === false
+        ? `Action NOT recorded: ${decision} for alert ${selectedAlert.id}`
+        : `Action recorded: ${decision} for alert ${selectedAlert.id}`
+    );
     setTimeout(() => setFeedbackSuccess(null), 3500);
   };
 

@@ -5,7 +5,7 @@ import { Bell, ShieldAlert, KeyRound, Ban, CheckCircle } from 'lucide-react';
 interface AlertsQueueViewProps {
   alerts: AlertIncident[];
   onSelectAlert?: (alertId: string) => void;
-  onSubmitFeedback?: (alertId: string, decision: string, justification: string) => void;
+  onSubmitFeedback?: (alertId: string, decision: string, justification: string) => Promise<boolean> | void;
 }
 
 export const AlertsQueueView: React.FC<AlertsQueueViewProps> = ({
@@ -20,11 +20,15 @@ export const AlertsQueueView: React.FC<AlertsQueueViewProps> = ({
     return a.severity === filterSeverity;
   });
 
-  const handleAction = (alertId: string, decision: string) => {
-    if (onSubmitFeedback) {
-      onSubmitFeedback(alertId, decision, `Analyst action: ${decision}`);
-    }
-    setActionNotice(`[COMMITTED] Decision ${decision} recorded for incident ${alertId}`);
+  const handleAction = async (alertId: string, decision: string) => {
+    const ok = onSubmitFeedback
+      ? await onSubmitFeedback(alertId, decision, `Analyst action: ${decision}`)
+      : undefined;
+    setActionNotice(
+      ok === false
+        ? `[FAILED] Decision ${decision} was not recorded for incident ${alertId}`
+        : `[COMMITTED] Decision ${decision} recorded for incident ${alertId}`
+    );
     setTimeout(() => setActionNotice(null), 3500);
   };
 

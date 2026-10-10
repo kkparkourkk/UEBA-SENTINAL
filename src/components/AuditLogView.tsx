@@ -37,6 +37,20 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ feedbackDataset }) =
     },
   ];
 
+  // signals_snapshot is stored as a JSON array of signal objects; show just the rule codes
+  const formatSignals = (raw: any): string => {
+    if (!raw) return '—';
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (Array.isArray(parsed)) {
+        return parsed.map((s: any) => (typeof s === 'string' ? s : s?.code)).filter(Boolean).join(', ') || '—';
+      }
+    } catch {
+      /* plain text such as "RULE_ODD_HOURS, RULE_VOLUME_SPIKE" */
+    }
+    return String(raw);
+  };
+
   const records = feedbackDataset && feedbackDataset.length > 0 ? feedbackDataset : defaultEntries;
 
   return (
@@ -91,8 +105,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ feedbackDataset }) =
                   <td className="py-2.5 px-3 whitespace-nowrap text-[#9ca3af]">
                     #{r.alert_id}
                   </td>
-                  <td className="py-2.5 px-3 text-[#d1d5db] max-w-[200px] truncate" title={r.signals_snapshot}>
-                    {r.signals_snapshot}
+                  <td className="py-2.5 px-3 text-[#d1d5db] max-w-[200px] truncate" title={formatSignals(r.signals_snapshot)}>
+                    {formatSignals(r.signals_snapshot)}
                   </td>
                   <td className="py-2.5 px-3 text-[#9ca3af] max-w-sm truncate" title={r.justification}>
                     {r.justification}

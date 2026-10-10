@@ -19,6 +19,7 @@ interface UnifiedDashboardViewProps {
   onNavigateToAlert?: (alertId: string) => void;
   currentUser?: AuthUser | null;
   onOpenAddEntity?: () => void;
+  onSubmitFeedback?: (alertId: string, decision: string, justification: string) => Promise<boolean> | void;
 }
 
 export const UnifiedDashboardView: React.FC<UnifiedDashboardViewProps> = ({
@@ -26,6 +27,7 @@ export const UnifiedDashboardView: React.FC<UnifiedDashboardViewProps> = ({
   onNavigateToAlert,
   currentUser,
   onOpenAddEntity,
+  onSubmitFeedback,
 }) => {
   const { user, peerComparison, trendData, activityFeed } = data;
   const isDirector = currentUser?.role === 'security_director';
@@ -186,9 +188,34 @@ export const UnifiedDashboardView: React.FC<UnifiedDashboardViewProps> = ({
     return activityFeed.slice(start, end);
   }, [selectedEvent, activityFeed]);
 
-  const handleTriageAction = (action: string) => {
-    setActionNotice(`[COMMITTED] ${action} -> EVENT #${selectedEvent?.id}`);
-    setTimeout(() => setActionNotice(null), 4000);
+  const handleTriageAction = async (action: string) => {
+    const flash = (msg: string) => {
+      setActionNotice(msg);
+      setTimeout(() => setActionNotice(null), 4000);
+    };
+
+    // "Add to dossier" is not an analyst decision; keep it as a local note.
+    if (action === 'ADD_INVESTIGATION') {
+      flash(`[NOTED] ${action} -> EVENT #${selectedEvent?.id}`);
+      return;
+    }
+
+    const alertId = selectedEvent?.linked_alert_id;
+    if (!alertId) {
+      flash(`[NOT RECORDED] EVENT #${selectedEvent?.id} has no linked alert to act on`);
+      return;
+    }
+
+    // Persist the decision so it shows up in the Audit Log, and only report
+    // success once the server has actually accepted it.
+    const ok = onSubmitFeedback
+      ? await onSubmitFeedback(alertId, action, `Analyst action: ${action}`)
+      : false;
+    flash(
+      ok === false
+        ? `[FAILED] ${action} was not recorded for alert ${alertId}`
+        : `[COMMITTED] ${action} -> ALERT ${alertId} (EVENT #${selectedEvent?.id})`
+    );
   };
 
   return (
